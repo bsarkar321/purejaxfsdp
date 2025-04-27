@@ -7,7 +7,7 @@ Files:
 - train_base.py (37 lines): Script for single-gpu training.
 - train_dp_easy.py (47 lines): Script for multi-gpu data parallelism (no parameter sharding) using just jax's JIT functionality. Please refer to [[https://docs.jax.dev/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html][this jax documentation]] on how automatic parallelism works.
 - train_dp.py (50 lines): Script for multi-gpu data parallelism (no parameter sharding) using shard_map. Please refer to [[https://docs.jax.dev/en/latest/notebooks/shard_map.html][this jax documentation]] on how shard_map works.
-- train_fsdp.py (110 lines): Script for multi-gpu fully sharded data parallelism, heavily modified from the flax implementation of FSDP from [[https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/data_parallel_fsdp.html][UvA DL Notebooks]]. Note that our implementation has no dependence on flax, allowing us to use the custom pytrees and forward logic in the commmon file.
+- train_fsdp.py (110 lines): Script for multi-gpu fully sharded data parallelism, borrowing heavily from the flax implementation of FSDP from [[https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/data_parallel_fsdp.html][UvA DL Notebooks]]. Note that our implementation has no dependence on flax, allowing us to use the custom pytrees and forward logic in the commmon file.
 
 ** Installation Instructions
 
