@@ -1,0 +1,38 @@
+* Pure Jax FSDP
+
+This repository consists of a simple implementation of a causal transformer along with implementations of data parallelism and fully sharded data parallelism. The core code for transformer training and calculating the loss function are completely independent of the FSDP logic, so one can reuse the FSDP logic for other training tasks without having to edit the training logic.
+
+Files:
+- common.py (95 lines): Core logic, consisting of the argument parser, parameter initialization, forward function, and loss function
+- train_base.py (37 lines): Script for single-gpu training.
+- train_dp_easy.py (47 lines): Script for multi-gpu data parallelism (no parameter sharding) using just jax's JIT functionality. Please refer to [[https://docs.jax.dev/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html][this jax documentation]] on how automatic parallelism works.
+- train_dp.py (50 lines): Script for multi-gpu data parallelism (no parameter sharding) using shard_map. Please refer to [[https://docs.jax.dev/en/latest/notebooks/shard_map.html][this jax documentation]] on how shard_map works.
+- train_fsdp.py (110 lines): Script for multi-gpu fully sharded data parallelism, heavily modified from the flax implementation of FSDP from [[https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/data_parallel_fsdp.html][UvA DL Notebooks]]. Note that our implementation has no dependence on flax, allowing us to use the custom pytrees and forward logic in the commmon file.
+
+** Installation Instructions
+
+Follow the [[https://docs.jax.dev/en/latest/installation.html][default installation instructions]] for jax. We show an example for an NVIDIA CUDA 12 GPU with Anaconda.
+
+#+begin_src
+  conda create -n jax_fsdp python=3.10
+  conda activate jax_fsdp
+  pip install "jax[cuda12]" optax tqdm
+
+  git clone https://github.com/bsarkar321/purejaxfsdp
+  cd purejaxfsdp
+#+end_src
+
+** Running Programs
+
+Specify which GPU devices to use with CUDA_VISIBLE_DEVICES
+
+#+begin_src
+  CUDA_VISIBLE_DEVICES=0 python train_base.py
+  CUDA_VISIBLE_DEVICES=0,1,2,3 python train_dp.py
+#+end_src
+
+Ideally, the outputs of each program would be identical (up to floating point precision errors), with the exception of the line detailing memory usage (CompiledMemoryStats) and the training speed.
+
+** Limitations
+
+This work inherits most of the common limitations of data parallelism and FSDP, namely that the batch size and axes for sharding need to be a multiple of the number of GPUs. Additionally, our FSDP implementation gives different results for optimizers that do not strictly consist of elementwise operations. For instance, dadapt_adamw in optax contrib (my preferred optimizer for supervised learning tasks since it eliminates the LR parameter) gives slightly different results due to the fact that it uses an optax "tree sum" that will reduce over each gpu independently instead of also summing across gpus.
